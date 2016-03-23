@@ -70,6 +70,7 @@ cdef extern from "cantera/base/Array.h" namespace "Cantera":
         CxxArray2D(size_t, size_t)
         void resize(size_t, size_t)
         double operator()(size_t, size_t)
+        double value(size_t, size_t)
 
 cdef extern from "cantera/thermo/SpeciesThermoInterpType.h":
     cdef cppclass CxxSpeciesThermo "Cantera::SpeciesThermoInterpType":
@@ -565,7 +566,7 @@ cdef extern from "cantera/zeroD/ReactorNet.h":
         void eval(double, double*, double*, double*)
         void evalJacobian(double, double*, double*, double*, CxxArray2D*)
         void return_Jacobian(CxxArray2D*)
-        std::vector<double> return_Jacobian2()
+        CxxArray2D return_Jacobian2()
 
         void setSensitivityTolerances(double, double)
         double rtolSensitivity()
