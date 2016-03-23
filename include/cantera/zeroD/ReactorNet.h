@@ -139,7 +139,7 @@ public:
     //! Returns the jacobian as a double for use in python. uses evalJacobian
     //! function
     void return_Jacobian(Array2D* j);
-    vector<double> return_Jacobian2();
+    std::vector<double> return_Jacobian2();
     //! Update the state of all the reactors in the network to correspond to
     //! the values in the solution vector *y*.
     void updateState(doublereal* y);

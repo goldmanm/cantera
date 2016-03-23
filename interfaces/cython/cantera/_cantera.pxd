@@ -562,6 +562,10 @@ cdef extern from "cantera/zeroD/ReactorNet.h":
         void setVerbose(cbool)
         size_t neq()
         void getState(double*)
+        void eval(double, double*, double*, double*)
+        void evalJacobian(double, double*, double*, double*, CxxArray2D*)
+        void return_Jacobian(CxxArray2D*)
+        std::vector<double> return_Jacobian2()
 
         void setSensitivityTolerances(double, double)
         double rtolSensitivity()

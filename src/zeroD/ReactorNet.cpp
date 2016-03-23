@@ -178,7 +178,7 @@ void ReactorNet::return_Jacobian(Array2D* j)
 	delete[] y; delete[] ydot;
 }
 
-vector<double> ReactorNet::return_Jacobian2()
+std::vector<double> ReactorNet::return_Jacobian2()
 {
 	Array2D j = Array2D(m_nv, m_nv);
 	doublereal* y = new doublereal[m_nv];
