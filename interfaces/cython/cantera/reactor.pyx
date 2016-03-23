@@ -816,7 +816,15 @@ cdef class ReactorNet:
             Cantera 2.3.
         """
         return self.net.step(t)
-
+    
+    def returnJacobian(self):
+        cdef CxxArray2D jacin = self.net.return_Jacobian2()
+        cdef np.ndarray[np.double_t, ndim=2] jacout = np.empty((self.n_vars,self.n_vars))
+        for row in range(self.n_vars):
+            for col in range(self.n_vars):
+                jacout[row,col]=jacin.value(row,col)
+        return jacout
+        
     def reinitialize(self):
         """
         Reinitialize the integrator after making changing to the state of the

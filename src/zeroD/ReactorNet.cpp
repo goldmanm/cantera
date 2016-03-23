@@ -178,7 +178,7 @@ void ReactorNet::return_Jacobian(Array2D* j)
 	delete[] y; delete[] ydot;
 }
 
-std::vector<double> ReactorNet::return_Jacobian2()
+Array2D ReactorNet::return_Jacobian2()
 {
 	Array2D j = Array2D(m_nv, m_nv);
 	doublereal* y = new doublereal[m_nv];
@@ -188,7 +188,7 @@ std::vector<double> ReactorNet::return_Jacobian2()
 	doublereal params=0;
 	evalJacobian(m_time, y, ydot, &params, &j);
 	delete[] y; delete[] ydot;
-	return j.data();
+	return j;
 }
 /*
 std::vector<std::vector<double>> ReactorNet::outputJacobian(doublereal t, doublereal y,
