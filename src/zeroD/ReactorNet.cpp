@@ -167,43 +167,24 @@ void ReactorNet::evalJacobian(doublereal t, doublereal* y,
     }
 }
 
-void ReactorNet::return_Jacobian(Array2D* j)
+Array2D ReactorNet::return_Jacobian()
 {
-	doublereal* y = new doublereal[m_nv];
-	doublereal* ydot = new doublereal[m_nv];
-	getState(y);
-	getState(ydot);
-	doublereal params=0;
-	evalJacobian(m_time, y, ydot, &params, j);
-	delete[] y; delete[] ydot;
-}
-
-Array2D ReactorNet::return_Jacobian2()
-{
+	// initialize array with blank space
 	Array2D j = Array2D(m_nv, m_nv);
 	doublereal* y = new doublereal[m_nv];
+	// this value is a dummy that will be replaced in evalJacobian
 	doublereal* ydot = new doublereal[m_nv];
 	getState(y);
+	// not sure if this statement is necessary
 	getState(ydot);
+	// setting the sensitivity params to zero ignores sensitivity in jacobian calculation
 	doublereal params=0;
 	evalJacobian(m_time, y, ydot, &params, &j);
+	// clear up data
 	delete[] y; delete[] ydot;
 	return j;
 }
-/*
-std::vector<std::vector<double>> ReactorNet::outputJacobian(doublereal t, doublereal y,
-                              doublereal ydot, doublereal p, Array2D j)
-{
-	evalJacobian(t, &y, &ydot, &p, &j);
-	std::vector<std::vector<double>> jacobian (neq(), std::vector<double> (neq(),0));
-	for (size_t row=0; row< neq(); row++){
-		for (size_t col=0; col < neq(); col++){
-			jacobian[row][col]=j(row,col);		
-		}
-	}
-	return jacobian;
-}
-*/
+
 void ReactorNet::updateState(doublereal* y)
 {
     checkFinite("y", y, m_nv);

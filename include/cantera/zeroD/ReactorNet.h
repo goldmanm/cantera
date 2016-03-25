@@ -136,10 +136,9 @@ public:
         return *m_integ;
     }
 
-    //! Returns the jacobian as a double for use in python. uses evalJacobian
-    //! function
-    void return_Jacobian(Array2D* j);
-    Array2D return_Jacobian2();
+    //! Returns the jacobian as a Array2D object for use in python. 
+    //! uses evalJacobian function
+        Array2D return_Jacobian();
     //! Update the state of all the reactors in the network to correspond to
     //! the values in the solution vector *y*.
     void updateState(doublereal* y);
