@@ -818,7 +818,12 @@ cdef class ReactorNet:
         return self.net.step(t)
     
     def returnJacobian(self):
-        cdef CxxArray2D jacin = self.net.return_Jacobian2()
+        """
+        Finds a numerical Jacobian approximated from the absolute and relative 
+        tolerances using the vector from the  get_state method.
+        This method is external to the actual SunDials Jacobian evaluation. 
+        """
+        cdef CxxArray2D jacin = self.net.return_Jacobian()
         cdef np.ndarray[np.double_t, ndim=2] jacout = np.empty((self.n_vars,self.n_vars))
         for row in range(self.n_vars):
             for col in range(self.n_vars):
@@ -996,7 +1001,8 @@ cdef class ReactorNet:
         Get the combined state vector of the reactor network.
 
         The combined state vector consists of the concatenated state vectors of
-        all entities contained.
+        all entities contained. It starts with extensive mass, volume, and
+        internal energy, followed by mass fractions of all species.
         """
         if not self.n_vars:
             raise Exception('ReactorNet empty or not initialized.')
