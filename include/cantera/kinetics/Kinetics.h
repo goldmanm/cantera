@@ -688,7 +688,7 @@ public:
      */
     virtual void getRevRateConstants(doublereal* krev,
                                      bool doIrreversible = false) {
-        throw NotImplementedError("Kinetics::getFwdRateConstants");
+        throw NotImplementedError("Kinetics::getRevRateConstants");
     }
 
     //! @}
