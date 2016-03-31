@@ -59,6 +59,95 @@ void IdealGasReactor::initialize(doublereal t0)
     m_uk.resize(m_nsp, 0.0);
 }
 
+/* remove if not needed for output to python
+vector_fp& IdealGasReactor::returnIntrinsicState()
+{
+    // Returns a vector with components: [0] is temperature (K), [1] is
+    // pressure (pascals), [2] is total number of moles (kmol), and [3...k+3]
+    // are the mole fractions of species. Wall species are not not supported
+    // currently.
+
+    // initialize the vector to return
+    std::vector<double> intrinsicState (m_nsp+3);
+    
+    // set temperature
+    intrinsicState[0] = m_thermo->temperature();
+    // set pressure
+    intrinsicState[1] = m_thermo->pressure();
+    // set moles
+    intrinsicState[2] = m_thermo->molarDensity() * volume();
+
+    // set mole fractions
+    doublereal* molefrac = new doublereal[m_nsp];
+    m_thermo->getMoleFraction(molefrac);
+    for (size_t i=3;i<m_nsp+3;++i){
+        intrinsicState[i]=molefrac[i-3];
+    delete molefrac // clean up data
+
+    return instrinsicState
+}
+*/
+void IdealGasReactor::getIntrinsicState(doublereal* x)
+{
+    // Returns a vector with components: [0] is temperature (K), [1] is
+    // pressure (pascals), [2] is total number of moles (kmol), and [3...k+3]
+    // are the mole fractions of species. Wall species are not not supported
+    // currently. the array x should have at least 3+num_species
+    
+    // set temperature
+    x[0] = m_thermo->temperature();
+    // set pressure
+    x[1] = m_thermo->pressure();
+    // set moles
+    x[2] = m_thermo->molarDensity() * volume();
+    // set mole fractions
+    m_thermo->getMoleFraction(x+3);
+}
+
+void IdealGasReactor::evalIntrinsicEqns(doublereal time, doublereal* x, doublereal* xdot)
+{
+    // Returns a vector of time derivatives with terms: [0] is 
+    // temperature (K), [1] is
+    // pressure (pascals), [2] is total number of moles (kmol), and [3...k+3]
+    // are the mole fractions of species. Wall species, time dependent flows,
+    // sensitivities and changes in volume are not not supported currently. 
+    // the array x should have at least 3+num_species.
+    
+    getIntrinsicState(x);
+    
+    // obtain the total molar concentration production rate
+    mol_prod=0;
+    for (size_t i=0; i<m_nsp+3; ++i){
+        mol_prod = mol_prod + m_wdot[i];
+    }
+    // convert to total moles produced
+    mol_prod = mol_prod * volume();
+    xdot[2] = mol_prod;
+    
+    // get partial molar enthalpy
+    //doublereal* hbar = new doublereal[m_nsp];
+    //m_thermo->getPartialMolarEnthalpies(hbar);
+    
+    // get regular states
+    doublereal* y = new doublereal[m_nv];
+    doublereal* ydot = new doublereal[m_nv];
+    doublereal params = 0;
+    getState(y);
+    evalEqs(time, y, ydot, &params);
+    
+    // save temperature
+    xdot[0]=ydot[2];
+
+    // save pressure using derivative of ideal gas law
+    xdot[1] = m_phase->GasConstant / volume() * (x[2]*xdot[0]+x[0]*xdot[2]);
+
+    // save mole fractions
+    doublereal* mw = m_thermo->getMolecularWeights();
+    for (i=3;i<m_nsp+3;++i){
+        xdot[i]=ydot[i]/mw[i]*m_thermo->mass()/x[2]
+    }
+}
+
 void IdealGasReactor::updateState(doublereal* y)
 {
     // The components of y are [0] the total mass, [1] the total volume,

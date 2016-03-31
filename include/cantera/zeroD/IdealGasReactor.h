@@ -36,6 +36,13 @@ public:
     virtual void evalEqs(doublereal t, doublereal* y,
                          doublereal* ydot, doublereal* params);
 
+    // Returns a vector with components: [0] is temperature (K), [1] is
+    // pressure (pascals), [2] is total number of moles (kmol), and [3...k+3]
+    // are the mole fractions of species. Wall species are not not supported
+    // currently. the array x should have at least 3+num_species
+    virtual void getIntrinsicState(doublereal* x);
+    virtual void evalIntrinsicEqns(doublereal time, doublereal* x, doublereal* xdot);
+
     virtual void updateState(doublereal* y);
 
     //! Return the index in the solution vector for this reactor of the

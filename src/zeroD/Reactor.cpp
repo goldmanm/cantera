@@ -199,7 +199,7 @@ void Reactor::updateSurfaceState(double* y)
 }
 
 void Reactor::evalEqs(doublereal time, doublereal* y,
-                      doublereal* ydot, doublereal* params)
+                      doublereal* ydot, doublereal* params)//, bool intrensic = false)
 {
     double dmdt = 0.0; // dm/dt (gas phase)
     double* dYdt = ydot + 3;

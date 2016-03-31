@@ -476,6 +476,7 @@ cdef extern from "cantera/zeroD/ReactorBase.h" namespace "Cantera":
         string name()
         void setName(string)
         void setInitialVolume(double)
+        CxxThermoPhase* contents()
 
 
 cdef extern from "cantera/zeroD/Reactor.h":
@@ -565,7 +566,7 @@ cdef extern from "cantera/zeroD/ReactorNet.h":
         void getState(double*)
         #void eval(double, double*, double*, double*)
         #void evalJacobian(double, double*, double*, double*, CxxArray2D*)
-        CxxArray2D return_Jacobian()
+        CxxArray2D return_Jacobian(cbool)
 
         void setSensitivityTolerances(double, double)
         double rtolSensitivity()

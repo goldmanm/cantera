@@ -120,6 +120,10 @@ public:
     virtual void evalEqs(doublereal t, doublereal* y,
                          doublereal* ydot, doublereal* params);
 
+    //! used for evaulatuating intrensic rates and jacobian objects for IdealGasReactors
+    virtual void evalIntrinsicEqns(doublereal time, doublereal* x, doublereal* xdot);
+    virtual void getIntrinsicState(doublereal* x);
+
     virtual void syncState();
 
     //! Set the state of the reactor to correspond to the state vector *y*.

@@ -137,8 +137,9 @@ public:
     }
 
     //! Returns the jacobian as a Array2D object for use in python. 
-    //! uses evalJacobian function
-        Array2D return_Jacobian();
+    //! uses evalJacobian or evalIntrinsicJacobian functions
+        Array2D return_Jacobian(bool intrinsic = false);
+
     //! Update the state of all the reactors in the network to correspond to
     //! the values in the solution vector *y*.
     void updateState(doublereal* y);
@@ -178,14 +179,15 @@ public:
     //! Evaluate the Jacobian matrix for the reactor network.
     /*!
      *  @param[in] t Time at which to evaluate the Jacobian
-     *  @param[in] y Global state vector at time *t*
-     *  @param[out] ydot Time derivative of the state vector evaluated at *t*.
+     *  @param[in] y/x Global state vector at time *t*
+     *  @param[out] ydot/xdot Time derivative of the state vector evaluated at *t*.
      *  @param[in] p sensitivity parameter vector (unused?)
      *  @param[out] j Jacobian matrix, size neq() by neq().
      */
     void evalJacobian(doublereal t, doublereal* y,
                       doublereal* ydot, doublereal* p, Array2D* j);
-
+    void evalIntrinsicJacobian(doublereal t, doublereal* x,
+                              doublereal* xdot, Array2D* j);
     // overloaded methods of class FuncEval
     virtual size_t neq() {
         return m_nv;

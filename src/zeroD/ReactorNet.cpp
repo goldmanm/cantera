@@ -128,7 +128,7 @@ void ReactorNet::addReactor(Reactor& r)
 }
 
 void ReactorNet::eval(doublereal t, doublereal* y,
-                      doublereal* ydot, doublereal* p)
+                      doublereal* ydot, doublereal* p)//, bool intrensic = false)
 {
     size_t n;
     size_t pstart = 0;
@@ -154,7 +154,7 @@ void ReactorNet::evalJacobian(doublereal t, doublereal* y,
         ysave = y[n];
         dy = m_atol[n] + fabs(ysave)*m_rtol;
         y[n] = ysave + dy;
-        dy = y[n] - ysave;
+        dy = y[n] - ysave; // this line seems redundant
 
         // calculate perturbed residual
         eval(t, y, m_ydot.data(), p);
@@ -167,23 +167,56 @@ void ReactorNet::evalJacobian(doublereal t, doublereal* y,
     }
 }
 
-Array2D ReactorNet::return_Jacobian()
+Array2D ReactorNet::return_Jacobian(bool intrinsic = false)
 {
 	// initialize array with blank space
 	Array2D j = Array2D(m_nv, m_nv);
 	doublereal* y = new doublereal[m_nv];
 	// this value is a dummy that will be replaced in evalJacobian
 	doublereal* ydot = new doublereal[m_nv];
-	getState(y);
-	// not sure if this statement is necessary
-	getState(ydot);
-	// setting the sensitivity params to zero ignores sensitivity in jacobian calculation
-	doublereal params=0;
-	evalJacobian(m_time, y, ydot, &params, &j);
+	if (!intrinsic) {
+		getState(y);
+		// not sure if this statement is necessary
+		getState(ydot);
+		// setting the sensitivity params to zero ignores sensitivity in jacobian calculation
+		doublereal params=0;
+		evalJacobian(m_time, y, ydot, &params, &j);
+	} else {
+		evalIntrinsicJacobian(m_time, y, ydot, &j);
+	}
 	// clear up data
 	delete[] y; delete[] ydot;
 	return j;
 }
+
+void ReactorNet::evalIntrinsicJacobian(doublereal t, doublereal* x,
+                              doublereal* xdot, Array2D* j)
+{
+	// currently only evaluates jacobian for a 1 reactor system
+    doublereal xsave, dx;
+    Array2D& jac = *j;
+    doublereal* xdot_perturbed = new doublereal[m_nv];
+    //evaluate the unperturbed ydot
+    m_reactors[0]->evalIntrinsicEqns(t, x, xdot);
+    for (size_t n = 0; n < m_nv; n++) {
+        // perturb x(n)
+        xsave = x[n];
+        dx = m_atol[n] + fabs(xsave)*m_rtol;
+        x[n] = xsave + dx;
+        dx = x[n] - xsave; // does this line make any sense?
+
+        // calculate perturbed residual
+        m_reactors[0]->evalIntrinsicEqns(t, x, xdot_perturbed);
+
+        // compute nth column of Jacobian
+        for (size_t m = 0; m < m_nv; m++) {
+            jac(m,n) = (xdot_perturbed[m] - xdot[m])/dx;
+        }
+        x[n] = xsave;
+    }
+}
+
+
 
 void ReactorNet::updateState(doublereal* y)
 {

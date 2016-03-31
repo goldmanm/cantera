@@ -108,6 +108,14 @@ public:
         throw NotImplementedError("ReactorBase::initialize");
     }
 
+    virtual void getIntrinsicState(doublereal* x) {
+        throw NotImplementedError("ReactorBase::getInrinsicState");
+    }
+
+    virtual void evalIntrinsicEqns(doublereal time, doublereal* x, doublereal* xdot) {
+        throw NotImplementedError("ReactorBase::evalIntrinsicEqns");
+    }
+
     //@}
 
     //! Set the state of the Phase object associated with this reactor to the
