@@ -488,7 +488,9 @@ cdef extern from "cantera/zeroD/Reactor.h":
         size_t componentIndex(string&)
         size_t neq()
         void getState(double*)
-
+        void evalEqs(double, double*, double*, double*)
+        void getIntrinsicState(double*)
+        void evalIntrinsicEqns(double, double*, double*)
         void addSensitivityReaction(size_t) except +
         size_t nSensParams()
 
@@ -567,6 +569,7 @@ cdef extern from "cantera/zeroD/ReactorNet.h":
         #void eval(double, double*, double*, double*)
         #void evalJacobian(double, double*, double*, double*, CxxArray2D*)
         CxxArray2D return_Jacobian(cbool)
+        CxxArray2D return_Jacobian()
 
         void setSensitivityTolerances(double, double)
         double rtolSensitivity()
@@ -888,10 +891,10 @@ cdef class InterfaceKinetics(Kinetics):
     pass
 
 cdef class Transport(_SolutionBase):
-     pass
+    pass
 
 cdef class DustyGasTransport(Transport):
-     pass
+    pass
 
 cdef class Mixture:
     cdef CxxMultiPhase* mix

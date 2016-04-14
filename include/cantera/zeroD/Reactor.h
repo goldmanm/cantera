@@ -121,8 +121,15 @@ public:
                          doublereal* ydot, doublereal* params);
 
     //! used for evaulatuating intrensic rates and jacobian objects for IdealGasReactors
-    virtual void evalIntrinsicEqns(doublereal time, doublereal* x, doublereal* xdot);
-    virtual void getIntrinsicState(doublereal* x);
+    //virtual void evalIntrinsicEqns(doublereal time, doublereal* x, doublereal* xdot);
+    //virtual void getIntrinsicState(doublereal* x);
+    virtual void getIntrinsicState(doublereal* x) {
+        throw NotImplementedError("ReactorBase::getInrinsicState");
+    }
+
+    virtual void evalIntrinsicEqns(doublereal time, doublereal* x, doublereal* xdot) {
+        throw NotImplementedError("ReactorBase::evalIntrinsicEqns");
+    }
 
     virtual void syncState();
 

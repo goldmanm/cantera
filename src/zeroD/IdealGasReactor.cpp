@@ -93,7 +93,11 @@ void IdealGasReactor::getIntrinsicState(doublereal* x)
     // pressure (pascals), [2] is total number of moles (kmol), and [3...k+3]
     // are the mole fractions of species. Wall species are not not supported
     // currently. the array x should have at least 3+num_species
-    
+        if (m_thermo == 0) {
+        throw CanteraError("getState",
+                           "Error: reactor is empty.");
+    }
+    m_thermo->restoreState(m_state);
     // set temperature
     x[0] = m_thermo->temperature();
     // set pressure
@@ -101,7 +105,7 @@ void IdealGasReactor::getIntrinsicState(doublereal* x)
     // set moles
     x[2] = m_thermo->molarDensity() * volume();
     // set mole fractions
-    m_thermo->getMoleFraction(x+3);
+    m_thermo->getMoleFractions(x+3);
 }
 
 void IdealGasReactor::evalIntrinsicEqns(doublereal time, doublereal* x, doublereal* xdot)
@@ -116,7 +120,7 @@ void IdealGasReactor::evalIntrinsicEqns(doublereal time, doublereal* x, doublere
     getIntrinsicState(x);
     
     // obtain the total molar concentration production rate
-    mol_prod=0;
+    doublereal mol_prod=0;
     for (size_t i=0; i<m_nsp+3; ++i){
         mol_prod = mol_prod + m_wdot[i];
     }
@@ -135,17 +139,19 @@ void IdealGasReactor::evalIntrinsicEqns(doublereal time, doublereal* x, doublere
     getState(y);
     evalEqs(time, y, ydot, &params);
     
-    // save temperature
+    // save temperature/dt
     xdot[0]=ydot[2];
 
-    // save pressure using derivative of ideal gas law
-    xdot[1] = m_phase->GasConstant / volume() * (x[2]*xdot[0]+x[0]*xdot[2]);
+    // save pressure/dt using derivative of ideal gas law
+    xdot[1] = GasConstant / volume() * (x[2]*xdot[0]+x[0]*xdot[2]);
 
-    // save mole fractions
-    doublereal* mw = m_thermo->getMolecularWeights();
-    for (i=3;i<m_nsp+3;++i){
-        xdot[i]=ydot[i]/mw[i]*m_thermo->mass()/x[2]
+    // save mole fraction/dt
+    doublereal* mw = new doublereal(m_nsp);
+    m_thermo->getMolecularWeights(mw);
+    for (size_t i=3;i<m_nsp+3;++i){
+        xdot[i]=ydot[i] / mw[i-3] * mass() / x[2];
     }
+    delete[] y; delete[] ydot;
 }
 
 void IdealGasReactor::updateState(doublereal* y)

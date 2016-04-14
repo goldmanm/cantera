@@ -167,7 +167,7 @@ void ReactorNet::evalJacobian(doublereal t, doublereal* y,
     }
 }
 
-Array2D ReactorNet::return_Jacobian(bool intrinsic = false)
+Array2D ReactorNet::return_Jacobian(bool intrinsic)
 {
 	// initialize array with blank space
 	Array2D j = Array2D(m_nv, m_nv);
@@ -182,10 +182,11 @@ Array2D ReactorNet::return_Jacobian(bool intrinsic = false)
 		doublereal params=0;
 		evalJacobian(m_time, y, ydot, &params, &j);
 	} else {
+		// m_reactors[0]->evalIntrinsicEqns(m_time,y,ydot);
 		evalIntrinsicJacobian(m_time, y, ydot, &j);
 	}
 	// clear up data
-	delete[] y; delete[] ydot;
+	// delete[] y; delete[] ydot;
 	return j;
 }
 
@@ -203,7 +204,7 @@ void ReactorNet::evalIntrinsicJacobian(doublereal t, doublereal* x,
         xsave = x[n];
         dx = m_atol[n] + fabs(xsave)*m_rtol;
         x[n] = xsave + dx;
-        dx = x[n] - xsave; // does this line make any sense?
+        //dx = x[n] - xsave; // does this line make any sense?
 
         // calculate perturbed residual
         m_reactors[0]->evalIntrinsicEqns(t, x, xdot_perturbed);
@@ -214,6 +215,7 @@ void ReactorNet::evalIntrinsicJacobian(doublereal t, doublereal* x,
         }
         x[n] = xsave;
     }
+    //delete[] xdot_perturbed;
 }
 
 

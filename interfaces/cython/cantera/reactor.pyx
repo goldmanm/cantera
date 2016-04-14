@@ -277,6 +277,76 @@ cdef class Reactor(ReactorBase):
         self.reactor.getState(&y[0])
         return y
 
+    def get_intrinsic_state(self):
+        """
+        Get the state vector of the reactor. Currently only functional for IdealGasReactor
+
+        The order of the variables (i.e. rows) is:
+
+          - 0  - temperature
+          - 1  - pressure
+          - 2  - total moles
+          - 3+ - mole fractions of the species
+
+        You can use the function `component_index` to determine the location
+        of a specific component
+        """
+        if not self.n_vars:
+            raise Exception('Reactor empty or network not initialized.')
+        cdef np.ndarray[np.double_t, ndim=1] y = np.zeros(self.n_vars)
+        self.reactor.getIntrinsicState(&y[0])
+        return y
+
+    def get_state_derivative(self, double time):
+        """
+        Get the time derivative of the state vector of the reactor.
+        Currently only functional for IdealGasReactor
+
+        The order of the variables (i.e. rows) is:
+
+          - 0  - temperature
+          - 1  - pressure
+          - 2  - total moles
+          - 3+ - mole fractions of the species
+
+        You can use the function `component_index` to determine the location
+        of a specific component
+        
+        time can be obtained by calling the property ReactorNet.time
+        """
+        if not self.n_vars:
+            raise Exception('Reactor empty or network not initialized.')
+        cdef np.ndarray[np.double_t, ndim=1] y = np.zeros(self.n_vars)
+        cdef np.ndarray[np.double_t, ndim=1] ydot = np.zeros(self.n_vars)
+        cdef np.ndarray[np.double_t, ndim=1] params = np.zeros(1)
+        self.reactor.getState(&y[0])
+        self.reactor.evalEqs(time,&y[0],&ydot[0],&params[0])
+        return ydot
+    
+    def get_intrinsic_state_derivative(self, double time):
+        """
+        Get the time derivative of the state vector of the reactor. 
+        Currently only functional for IdealGasReactor
+
+        The order of the variables (i.e. rows) is:
+
+          - 0  - temperature
+          - 1  - pressure
+          - 2  - total moles 
+          - 3+ - mole fractions of the species
+
+        You can use the function `component_index` to determine the location
+        of a specific component
+        
+        time can be obtained by calling the property ReactorNet.time
+        """
+        if not self.n_vars:
+            raise Exception('Reactor empty or network not initialized.')
+        cdef np.ndarray[np.double_t, ndim=1] y = np.zeros(self.n_vars)
+        cdef np.ndarray[np.double_t, ndim=1] ydot = np.zeros(self.n_vars)
+        self.reactor.evalIntrinsicEqns(time,&y[0],&ydot[0])
+        return ydot
+
 
 cdef class Reservoir(ReactorBase):
     """
@@ -817,13 +887,14 @@ cdef class ReactorNet:
         """
         return self.net.step(t)
     
-    def returnJacobian(self):
+    def returnJacobian(self, cbool intrinsic=False):
         """
         Finds a numerical Jacobian approximated from the absolute and relative 
         tolerances using the vector from the  get_state method.
         This method is external to the actual SunDials Jacobian evaluation. 
         """
-        cdef CxxArray2D jacin = self.net.return_Jacobian()
+        
+        cdef CxxArray2D jacin = self.net.return_Jacobian(intrinsic)
         cdef np.ndarray[np.double_t, ndim=2] jacout = np.empty((self.n_vars,self.n_vars))
         for row in range(self.n_vars):
             for col in range(self.n_vars):
@@ -1001,8 +1072,7 @@ cdef class ReactorNet:
         Get the combined state vector of the reactor network.
 
         The combined state vector consists of the concatenated state vectors of
-        all entities contained. It starts with extensive mass, volume, and
-        internal energy, followed by mass fractions of all species.
+        all entities contained. 
         """
         if not self.n_vars:
             raise Exception('ReactorNet empty or not initialized.')
