@@ -93,6 +93,7 @@ void IdealGasReactor::getIntrinsicState(doublereal* x)
     // pressure (pascals), [2] is total number of moles (kmol), and [3...k+3]
     // are the mole fractions of species. Wall species are not not supported
     // currently. the array x should have at least 3+num_species
+	cout << "starting getIntrinsicState method";
         if (m_thermo == 0) {
         throw CanteraError("getState",
                            "Error: reactor is empty.");
@@ -116,12 +117,14 @@ void IdealGasReactor::evalIntrinsicEqns(doublereal time, doublereal* x, doublere
     // are the mole fractions of species. Wall species, time dependent flows,
     // sensitivities and changes in volume are not not supported currently. 
     // the array x should have at least 3+num_species.
-    
+    cout << "starting evalIntrinsicEqns method\n";
     getIntrinsicState(x);
     
     // obtain the total molar concentration production rate
+	cout << "obtain total number of moles\n";
     doublereal mol_prod=0;
-    for (size_t i=0; i<m_nsp+3; ++i){
+    for (size_t i=0; i<m_nsp; ++i){
+	cout << i;
         mol_prod = mol_prod + m_wdot[i];
     }
     // convert to total moles produced
@@ -133,6 +136,7 @@ void IdealGasReactor::evalIntrinsicEqns(doublereal time, doublereal* x, doublere
     //m_thermo->getPartialMolarEnthalpies(hbar);
     
     // get regular states
+	cout << "evalIntrinsicEqns-> set states\n";
     doublereal* y = new doublereal[m_nv];
     doublereal* ydot = new doublereal[m_nv];
     doublereal params = 0;
@@ -140,6 +144,7 @@ void IdealGasReactor::evalIntrinsicEqns(doublereal time, doublereal* x, doublere
     evalEqs(time, y, ydot, &params);
     
     // save temperature/dt
+	cout << "evalIntrinsicEqns-> temperature\n";
     xdot[0]=ydot[2];
 
     // save pressure/dt using derivative of ideal gas law
@@ -148,10 +153,35 @@ void IdealGasReactor::evalIntrinsicEqns(doublereal time, doublereal* x, doublere
     // save mole fraction/dt
     doublereal* mw = new doublereal(m_nsp);
     m_thermo->getMolecularWeights(mw);
-    for (size_t i=3;i<m_nsp+3;++i){
+	cout << "evalIntrinsicEqns-> saving mole fractions\n";
+	cout << "number of species, variables: ";
+	cout << m_nsp;
+	cout << " ";
+	cout << m_nv;
+	cout << "\n";
+    for (size_t i=3;i<m_nv;i++){
         xdot[i]=ydot[i] / mw[i-3] * mass() / x[2];
+	cout << i;
     }
-    delete[] y; delete[] ydot;
+    
+	// just code checking
+	cout << "\n\nstate array:\n";
+	for (int index = m_nv - 1; index >= 0; index--) {
+    		cout << x[index];
+		cout << " ";
+	}
+	cout << "\n\nd-state array:\n";
+	for (int index = m_nv - 1; index >= 0; index--) {
+    		cout << xdot[index];
+		cout << " ";
+	}
+	cout << "deleting y & ydot\n";
+
+
+    //delete[] y; delete[] ydot;
+    //delete[] mw;
+
+	cout << "exiting method\n";
 }
 
 void IdealGasReactor::updateState(doublereal* y)

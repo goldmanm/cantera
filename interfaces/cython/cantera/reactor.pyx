@@ -293,9 +293,12 @@ cdef class Reactor(ReactorBase):
         """
         if not self.n_vars:
             raise Exception('Reactor empty or network not initialized.')
-        cdef np.ndarray[np.double_t, ndim=1] y = np.zeros(self.n_vars)
-        self.reactor.getIntrinsicState(&y[0])
-        return y
+        cdef np.ndarray[np.double_t, ndim=1] x = np.empty(self.n_vars)
+        #print 'calling getIntrinsicState'
+        self.reactor.getIntrinsicState(&x[0])
+        #print 'returned getIntrinsicState'
+        print x
+        return x
 
     def get_state_derivative(self, double time):
         """
@@ -342,10 +345,15 @@ cdef class Reactor(ReactorBase):
         """
         if not self.n_vars:
             raise Exception('Reactor empty or network not initialized.')
-        cdef np.ndarray[np.double_t, ndim=1] y = np.zeros(self.n_vars)
-        cdef np.ndarray[np.double_t, ndim=1] ydot = np.zeros(self.n_vars)
-        self.reactor.evalIntrinsicEqns(time,&y[0],&ydot[0])
-        return ydot
+        print 'starting instrinsic rate derivative, creating numpy arrays'
+        cdef np.ndarray[np.double_t, ndim=1, mode="c"] x = np.zeros(self.n_vars)
+        cdef np.ndarray[np.double_t, ndim=1, mode="c"] xdot = np.zeros(self.n_vars)
+        print 'evaluating intrinsic equations'
+        self.reactor.evalIntrinsicEqns(time,&x[0],&xdot[0])
+        # the following commented print statement also raises an error
+        print x  
+        #print xdot
+        return xdot # the error occurs right here!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 
 cdef class Reservoir(ReactorBase):
