@@ -78,7 +78,7 @@ Make
 ====
 
 Cantera is distributed with an "include Makefile" that can be used with
-Make-based build systems. This file ``Cantera.mak`` is located in the
+Make-based build systems. This file ``Makefile.in`` is located in the
 ``samples`` subdirectory of the Cantera installation directory. To use it, add a
 line referencing this file to the top of your Makefile::
 
@@ -98,13 +98,13 @@ contained in ``Cantera.mak``:
     RM=rm -f
     CCFLAGS=-g
     CPPFLAGS=$(CANTERA_INCLUDES)
-    LDFLAGS=
+    LDFLAGS=-std=c++11
     LDLIBS=$(CANTERA_LIBS)
 
     SRCS=sample.cpp
     OBJS=$(subst .cpp,.o,$(SRCS))
 
-    all: sample
+	all: sample
 
     kinetics1: $(OBJS)
 	    $(CXX) $(LDFLAGS) -o sample $(OBJS) $(LDLIBS)
@@ -115,3 +115,9 @@ contained in ``Cantera.mak``:
     dist-clean: clean
 	    $(RM) *~
 
+To run this ``Makefile``, replace the ``@...@`` in cantera/samples/Makefile.in with 
+appropriate file locations. You can rename it to ``makefile`` and change its 
+directory for convenience. Then run the ``make kinetics1` command followed by 
+executing the resulting file, ``sample`` with ``./sample`` on a unix-based system.
+
+	
